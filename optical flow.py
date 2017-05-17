@@ -45,8 +45,8 @@ def load_dataset( dataset, base_dir ):
         video_file = 'cafe_cropped_center_long.mp4'
     return(out_dir, video_file)
 
-base_dir = '/home/brad/pythonFiles/opencv_pedestrian/'
-datasets = base_dir + 'datasets/'
+base_dir = '/home/brad/pythonFiles/opencv_pedestrian_2/'
+datasets = '/home/brad/pythonFiles/datasets/'
 out_dir, video_file = load_dataset("cafe", base_dir)
 cam = cv2.VideoCapture(datasets + video_file)        
 
