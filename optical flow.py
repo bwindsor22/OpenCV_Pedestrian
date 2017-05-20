@@ -47,7 +47,7 @@ def load_dataset( dataset, base_dir ):
 
 base_dir = '/home/brad/pythonFiles/opencv_pedestrian_2/'
 datasets = '/home/brad/pythonFiles/datasets/'
-out_dir, video_file = load_dataset("cafe", base_dir)
+out_dir, video_file = load_dataset("oculus", base_dir)
 cam = cv2.VideoCapture(datasets + video_file)        
 
 lk_params = dict( winSize  = (15, 15),
@@ -195,7 +195,7 @@ while (frame_idx <= write_frames * write_every ):
 #%% Use Dynamic Time Warping to find track similarity
 # http://www.cs.ucr.edu/~eamonn/vldb05.pdf
 
-def simple_cost(x, y):
+def simple_norm(x, y):
      return(math.pow(x*x + y*y, 0.5))
  
 def gen_dtw_fig(dist, cost, acc, path, plot_num):
@@ -212,6 +212,8 @@ def apply_dtw_1d(x0, x1):
      dist, cost, acc, path = dtw(x0, x1, dist=lambda x0, x1: np.linalg.norm(x0 - x1, ord=1))
      
      return(dist, cost, acc, path)
+
+    
  
 def apply_dtw(track0, track1, gen_figs):
      x0 = track0[:,0].reshape(-1,1)
@@ -230,8 +232,8 @@ def apply_dtw(track0, track1, gen_figs):
          gen_dtw_fig(distX, costX, accX, pathX, 1)
          gen_dtw_fig(distY, costY, accY, pathY, 2)
 
-     total_cost = simple_cost(distX, distY)
-     total_cost = simple_cost(total_cost, math.pow( abs( len(track0) - len(track1) ),0.5) )
+     total_cost = simple_norm(distX, distY)
+     total_cost = simple_norm(total_cost, math.pow( abs( len(track0) - len(track1) ), 0.5) )
      
      return(total_cost)
 

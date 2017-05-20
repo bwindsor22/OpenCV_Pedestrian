@@ -15,8 +15,8 @@ import matplotlib.pyplot as plt
 import cv2
 
 #Constants for data locations
-DATA = "data"
-BKGND = "bkgnd"
+DATA = "/home/brad/pythonFiles/datasets/mall/frames/" #"data"
+BKGND = "/home/brad/pythonFiles/datasets/mall_background/" #"bkgnd"
 IMG_BASE = "seq_00{0}0.jpg"
 
 def get_contours(img_num, area=0):
@@ -29,6 +29,7 @@ def get_contours(img_num, area=0):
 
     gray_bimg = cv2.cvtColor(bimg, cv2.COLOR_BGR2GRAY)
     _, contours, hierarchy = cv2.findContours(gray_bimg, 1, 2)
+    
     return contours
 
 def draw_ellipses(img_num, area=0):
@@ -40,6 +41,8 @@ def draw_ellipses(img_num, area=0):
     img = cv2.imread(img_path)
     contours = get_contours(img_num, area)
     for contour in contours:
+        if cv2.contourArea(contour) <= area:
+            continue
         try:
             ellipse = cv2.fitEllipse(contour)
             cv2.ellipse(img, ellipse, (255, 255, 255), 2)
@@ -53,13 +56,17 @@ def show_image(img_num, area=0):
     """
     img = draw_ellipses(img_num, area)
     plt.imshow(img, cmap="gray")
-    
+
+img_num = 194
 plt.figure()
-contours = get_contours(200, 0)
+contours = get_contours(194)
 areas = [int(cv2.contourArea(contour)) for contour in contours]
 hist, bins = np.histogram(areas, bins = 1000)
 hist = hist[3:]
 bins = bins[3:]
 width = 0.7 * (bins[1] - bins[0])
 center = (bins[:-1] + bins[1:]) / 2
+middle_bin = (bins[-1] + bins[0]) / 2
 plt.bar(center, hist, align='center', width=width)
+plt.show()
+show_image(194, area=50)
