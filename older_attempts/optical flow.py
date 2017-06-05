@@ -20,8 +20,6 @@ Created on Thu Apr 27 19:08:32 2017
 import cv2
 import numpy as np
 import math
-import sys
-import pdb
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import scipy.cluster.hierarchy as hac
@@ -29,10 +27,12 @@ from scipy.spatial.distance import pdist
 from scipy.spatial.distance import squareform
 from dtw import dtw
 from time import clock
+import load_pedestrian as ld
 
 
 
 #%% Load Settings
+
 def load_dataset( dataset, base_dir ):
     if dataset == "hallway":
         out_dir = base_dir + 'outputFiles/hallway/'
@@ -43,12 +43,12 @@ def load_dataset( dataset, base_dir ):
     if dataset == "cafe":
         out_dir = base_dir + 'outputFiles/cafe_cropped_long_center_tracks/'
         video_file = 'cafe_cropped_center_long.mp4'
+    cam = cv2.VideoCapture(datasets + video_file)        
     return(out_dir, video_file)
 
 base_dir = '/home/brad/pythonFiles/opencv_pedestrian_2/'
 datasets = '/home/brad/pythonFiles/datasets/'
 out_dir, video_file = load_dataset("oculus", base_dir)
-cam = cv2.VideoCapture(datasets + video_file)        
 
 lk_params = dict( winSize  = (15, 15),
                   maxLevel = 2,
@@ -94,11 +94,6 @@ def dist_from_beginning(tr):
     p1 = tr[-1][0:2]
     return dist_between_points(p0, p1)
 
-def erode_dialate(fgmask, erode, dialate):
-    fgmask = cv2.morphologyEx(fgmask, cv2.MORPH_OPEN, kernel) 
-    fgmask = cv2.erode(fgmask, kernel,iterations = erode)
-    fgmask = cv2.dilate(fgmask, kernel, iterations = dialate)
-    return(fgmask)
 
 def get_drawable_tracks(tracks, min_points, min_length):
     drawable_tracks = []
@@ -106,6 +101,8 @@ def get_drawable_tracks(tracks, min_points, min_length):
         if len(track) >= min_points and dist_from_beginning(track) > min_length:
             drawable_tracks.append(track)
     return(drawable_tracks)
+
+out_dir, cam = ld.load_dataset("oculus")
 
 frame_idx = 0        
 active_tracks = []

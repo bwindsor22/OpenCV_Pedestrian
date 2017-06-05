@@ -66,7 +66,8 @@ hist = hist[3:]
 bins = bins[3:]
 width = 0.7 * (bins[1] - bins[0])
 center = (bins[:-1] + bins[1:]) / 2
-middle_bin = (bins[-1] + bins[0]) / 2
 plt.bar(center, hist, align='center', width=width)
 plt.show()
 show_image(194, area=50)
+
+
