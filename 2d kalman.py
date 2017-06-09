@@ -42,8 +42,8 @@ f1.F = np.array ([[1, dt, 0,  0],
                 [0,  0, 1, dt],
                 [0,  0, 0,  1]])
 f1.u = 0 # no info about rotors turning
-f1.H = np.array ([[1/0.3048, 0, 0, 0], #measurement to state. (feet to meters)
-                  [0, 0, 1/0.3048, 0]])
+f1.H = np.array ([[1, 0, 0, 0], #measurement to state.
+                  [0, 0, 1, 0]])
 f1.R = np.array([[5,0], # initial variance in measurments
                  [0, 5]])
 f1.Q = np.eye(4) * 0.001 # process noise
@@ -57,13 +57,13 @@ pxs, pys = [],[]
 s = PosSensor1 ([0,0], (2,1), 3.)
 for i in range(count):
     pos = s.read()
-    z = np.array([[pos[0]],[pos[1]]])
+    z = np.array([[x],[y]])
     f1.predict ()
     f1.update (z)
     xs.append (f1.x[0,0])
-    ys.append (f1.x[2,0])
-    pxs.append (pos[0]*.3048)
-    pys.append(pos[1]*.3048)
+    ys.append(f1.x[2,0])
+    pxs.append(pos[0])
+    pys.append(pos[1])
     
 p1, = plt.plot (xs, ys, 'r--')
 p2, = plt.plot (pxs, pys)
