@@ -7,6 +7,7 @@ Created on Sat May 20 17:42:52 2017
 import load_pedestrian as ld
 from MOGbkgsubtract import mog_bkg_subtractor
 from frame_diff_bkgsubtract import frame_diff_bkgsubtract
+from scipy.signal import savgol_filter
 
 import cv2
 import matplotlib.pyplot as plt
@@ -78,6 +79,7 @@ class points_tracker:
         self.min_points = min_points
         self.min_idle_time = 30
         self.min_distance_from_last_point = 100
+        self.smooth_window_len = 9
         self.archive_tracks = []
         self.active_tracks = []
         self.frame_idx = 0
@@ -124,13 +126,13 @@ class points_tracker:
         time_since_last_update = self.frame_idx - tr.estimated_points[-1][2]
         return time_since_last_update > self.min_idle_time
 
-    def draw_active_tracks(self, frame_clr):
+    def draw_tracks(self, frame_clr):
         drawable_tracks = self.get_drawable_tracks()
         for index, tr in enumerate(drawable_tracks):
             track_color = tuple(256 * x for x in cm.Spectral(index * 100 % 255)[0:3])
             cv2.polylines(frame_clr, [np.int32([tup[0:2] for tup in tr])], False, track_color)
     
-    def get_drawable_tracks(self):
+    def get_drawable_tracks(self, smooth=True):
         """
         return valid archive and active tracks
         """
@@ -141,9 +143,28 @@ class points_tracker:
         for track in self.archive_tracks:
             if len(track.estimated_points) >= self.min_points:
                 drawable_tracks.append(track.estimated_points)
+        if smooth:
+            drawable_tracks = self.smooth_savgol(drawable_tracks)
+            
         return(drawable_tracks)    
 
-    def get_drawable_tracks_2Dnumpy(self):
+    def smooth_savgol(self, rough_tracks):
+        #similar to a box window, using polynomials
+        smooth_tracks= []
+        for tr in rough_tracks:
+            tr = np.array(tr)
+            
+            if(len(tr) < 2*self.smooth_window_len):
+                smooth_tracks.append(tr)
+                continue
+            
+            xnew = savgol_filter(tr[:,0], self.smooth_window_len, 1)
+            ynew = savgol_filter(tr[:,1], self.smooth_window_len, 1)
+            tr = list( zip(xnew, ynew, tr[:,2] ))
+            smooth_tracks.append(tr)
+        return(smooth_tracks)
+        
+    def get_drawable_tracks_npstack(self):
         tracks = self.get_drawable_tracks()
         for index, track in enumerate(tracks):
             track_num = index * np.ones((len(track),1), dtype = 'int32')
@@ -161,13 +182,13 @@ def process_frame(frame_bw, frame_clr, Pt, area=0):
     shape_centers = draw_ellipses_and_centers(frame_clr, ellipses)
     
     Pt.update_tracks(shape_centers)  
-    Pt.draw_active_tracks(frame_clr)
+    Pt.draw_tracks(frame_clr)
     
     
 def get_ellipses(frame_bw, Pt, area=0):
     """
     find contours and match ellipses. 
-    Uses area a lower bound for what to remove.
+    Uses an area lower bound for what to remove.
     """
 
     _, contours, hierarchy = cv2.findContours(frame_bw, 1, 2)
@@ -237,15 +258,15 @@ while True:
     plt.imshow(frame_clr)
     plt.show()
 
-#%%
+#%% Save final view and heatmap
 
-nptracks = Pt.get_drawable_tracks_2Dnumpy()
-df = pd.DataFrame(nptracks, columns=['x','y','time','track'])
+npstack = Pt.get_drawable_tracks_npstack()
+df = pd.DataFrame(npstack, columns=['x','y','time','track'])
 paths = df[['x','y']]
 
 
 write_name = run_name +  str(frame_idx) + "_"
-cv2.imwrite(base_dir + write_name + 'final_img.png', frame_clr)
+cv2.imwrite(base_dir + 'outputFiles/' + write_name + 'final_img.png', frame_clr)
 
 
 ret, frame_clr = Dataset.get_next_frame(frame_idx)
@@ -253,5 +274,5 @@ ret, frame_clr = Dataset.get_next_frame(frame_idx)
 pil_img = Image.fromarray(frame_clr)
 heatmapper = Heatmapper()
 heatmap = heatmapper.heatmap_on_img(paths.values.tolist(), pil_img)
-heatmap.save(base_dir + write_name + 'heatmap.png')
+heatmap.save(base_dir + 'outputFiles/' + write_name + 'heatmap.png')
 
