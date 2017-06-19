@@ -29,6 +29,7 @@ video_datasets = dict(hallway = dict(
                                     video_file = datasets + 'pedestrian_datasets_oculus/Oculus.mp4',
                                     #frame_crop = [[220,720],[0,800]] 
                                     frame_ranges = dict(
+                                                       large = (0, 5000),
                                                        one_extra_lead = (0, 1500),
                                                        horizontal_vertical = (650,1500),
                                                        person_horizontal = (1100, 1500),                                                       

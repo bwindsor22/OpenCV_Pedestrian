@@ -19,7 +19,7 @@ class frame_diff_bkgsubtract:
 	# for a static background use a lower value, like 0.001. But if 
 	# your background has moving trees and stuff, use a higher value,
 	# maybe start with 0.01.
-    def __init__(self,alpha, thresh, firstFrame=None, bkg=None, erode=2, dialate=2, kernel_size=3):
+    def __init__(self, long_term_alpha, thresh, firstFrame=None, bkg=None, erode=3, dialate=6, kernel_size=3):
         self.kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(kernel_size,kernel_size))
         self.erode = erode
         self.dialate = dialate
@@ -27,8 +27,8 @@ class frame_diff_bkgsubtract:
         self.frame_count = 0
 
         
-        self.long_term_alpha = alpha
-        self.alpha = alpha
+        self.long_term_alpha = long_term_alpha
+        self.alpha = long_term_alpha
         
         if bkg is None:
             self.create_new_bkg = True
@@ -51,10 +51,12 @@ class frame_diff_bkgsubtract:
     def getForeground(self,frame):
         # use a higher alpha to adaptively learn, as needed
         if self.create_new_bkg:
-            if self.frame_count > 200:
+            if self.frame_count > 1000:
                 self.create_new_bkg = False
                 self.alpha = self.long_term_alpha
-            elif self.frame_count > 100:
+            elif self.frame_count == 200:
+                self.alpha = 0.005
+            elif self.frame_count == 100:
                 self.alpha = 0.01
             else:
                 self.alpha = 0.05

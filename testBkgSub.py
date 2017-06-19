@@ -18,11 +18,11 @@ from frame_diff_bkgsubtract import frame_diff_bkgsubtract
 base_dir = '/home/brad/pythonFiles/opencv_pedestrian_2/'
 
 
-Dataset = ld.get_dataset('oculus','person_horizontal')
+Dataset = ld.get_dataset('oculus','large')
 ret, frame = Dataset.get_next_frame(0)
-#Bkg = BackGroundSubtractor(0.001,30,firstFrame=frame)
-noise_bkg = np.load(base_dir + 'noisebkg.npy')
-Bkg = frame_diff_bkgsubtract(0.001,30,bkg=noise_bkg)
+Bkg = frame_diff_bkgsubtract(0.001,30,firstFrame=frame)
+#noise_bkg = np.load(base_dir + 'noisebkg.npy')
+#Bkg = frame_diff_bkgsubtract(0.0001,30,bkg=noise_bkg)
 
 frame_idx = 0
 while(True):

@@ -13,7 +13,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 import math as math
 import matplotlib.cm as cm
+import pandas as pd
 from filterpy.kalman import KalmanFilter
+from heatmappy import Heatmapper
+from PIL import Image
+
 
 #location of folder checked out from:
 # https://bwindsor22@bitbucket.org/bwindsor22/opencv_pedestrian_2.git
@@ -22,9 +26,9 @@ base_dir = '/home/brad/pythonFiles/opencv_pedestrian_2/'
 
 """
 TODO:
-Generalize the datasets
 Create basic visualizations (Sankey, MapBox)
 Get new footage
+Crossover between two areas (add measurment to two tracks)
 Ideas for speed:
     C++
     use imutils to resize
@@ -139,8 +143,18 @@ class points_tracker:
                 drawable_tracks.append(track.estimated_points)
         return(drawable_tracks)    
 
+    def get_drawable_tracks_2Dnumpy(self):
+        tracks = self.get_drawable_tracks()
+        for index, track in enumerate(tracks):
+            track_num = index * np.ones((len(track),1), dtype = 'int32')
+            track = np.append(track, track_num, axis=1)
 
+            if index == 0:
+                all_tracks = track
+            else: 
+                all_tracks = np.append(all_tracks, track, axis=0)
 
+        return(all_tracks)
 
 def process_frame(frame_bw, frame_clr, Pt, area=0):
     ellipses = get_ellipses(frame_bw, Pt, area)
@@ -184,7 +198,7 @@ def draw_ellipses_and_centers(frame_clr, ellipses):
 run_name = ""
 frame_idx = 0
 
-Dataset = ld.get_dataset('oculus','clear_horizontal')
+Dataset = ld.get_dataset('oculus','large')
 #Bkg = mog_bkg_subtractor()
 
 noise_bkg = np.load(base_dir + 'noisebkg.npy')
@@ -200,6 +214,10 @@ while True:
     if not ret:
         print("end of reel")
         break
+    
+    #temp skip frames to improve speed
+    if not frame_idx % 3 == 0:
+        continue
     
     frame_bw = Bkg.process_frame(frame_clr)
     
@@ -220,4 +238,20 @@ while True:
     plt.show()
 
 #%%
-cv2.imwrite(base_dir + run_name +  '2final_img.png', frame_clr)
+
+nptracks = Pt.get_drawable_tracks_2Dnumpy()
+df = pd.DataFrame(nptracks, columns=['x','y','time','track'])
+paths = df[['x','y']]
+
+
+write_name = run_name +  str(frame_idx) + "_"
+cv2.imwrite(base_dir + write_name + 'final_img.png', frame_clr)
+
+
+ret, frame_clr = Dataset.get_next_frame(frame_idx)
+
+pil_img = Image.fromarray(frame_clr)
+heatmapper = Heatmapper()
+heatmap = heatmapper.heatmap_on_img(paths.values.tolist(), pil_img)
+heatmap.save(base_dir + write_name + 'heatmap.png')
+
