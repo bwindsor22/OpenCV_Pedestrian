@@ -4,6 +4,7 @@
 Created on Sat Jun  3 17:47:00 2017
 
 @author: brad
+Kalman filter demo
 """
 import matplotlib.pyplot as plt
 import numpy.random as random
@@ -23,14 +24,12 @@ class PosSensor1(object):
             self.vel= (- 5, self.vel[1])
         return [self.pos[0] + random.randn() * self.noise_scale,
                 self.pos[1] + random.randn() * self.noise_scale]
-"""
 pos = [4,3]
 s = PosSensor1(pos, (2,1), 1)
 for i in range (50):
     pos = s.read()
     plt.scatter(pos[0], pos[1])
 plt.show()
-"""
 
 from filterpy.kalman import KalmanFilter
 import numpy as np

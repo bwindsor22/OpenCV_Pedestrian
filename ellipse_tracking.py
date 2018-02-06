@@ -3,6 +3,9 @@
 #%%
 """
 Created on Sat May 20 17:42:52 2017
+
+Fits shapes to ellipses in image
+Uses a kalman filter to track shape centers
 """
 import load_pedestrian as ld
 from MOGbkgsubtract import mog_bkg_subtractor
@@ -19,24 +22,6 @@ from filterpy.kalman import KalmanFilter
 from heatmappy import Heatmapper
 from PIL import Image
 
-
-#location of folder checked out from:
-# https://bwindsor22@bitbucket.org/bwindsor22/opencv_pedestrian_2.git
-base_dir = '/home/brad/pythonFiles/opencv_pedestrian_2/'
-
-
-"""
-TODO:
-Create basic visualizations (Sankey, MapBox)
-Get new footage
-Crossover between two areas (add measurment to two tracks)
-Ideas for speed:
-    C++
-    use imutils to resize
-    replace kalman filter with simple g-h filter
-    don't need noise and erode_dialate in bkg_sub
-Separate multi-person ellipses
-"""
 class Track:
     """
     A person and a list of historical points
@@ -219,8 +204,7 @@ def draw_ellipses_and_centers(frame_clr, ellipses):
 run_name = ""
 frame_idx = 0
 
-Dataset = ld.get_dataset('oculus','large')
-#Bkg = mog_bkg_subtractor()
+Dataset = ld.get_dataset('hallway','large')
 
 noise_bkg = np.load(base_dir + 'noisebkg.npy')
 Bkg = frame_diff_bkgsubtract(0.0001, 30, bkg=noise_bkg)

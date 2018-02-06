@@ -2,20 +2,15 @@
 # -*- coding: utf-8 -*-
 """
 Created on Thu Jun 15 12:11:37 2017
-
-@author: brad
+Helper class for loading datasets, images and otherwise
 """
 import glob
 import cv2
 
 
-#location of datasets folder checked out from:
-#https://bwindsor22@bitbucket.org/bwindsor22/pedestrian_datasets.git 
-datasets = '/home/brad/pythonFiles/datasets/'
+datasets = '/datasets/'
 
-#location of folder checked out from:
-# https://bwindsor22@bitbucket.org/bwindsor22/opencv_pedestrian_2.git
-base_dir = '/home/brad/pythonFiles/opencv_pedestrian_2/'
+base_dir = '/opencv_pedestrian_2/'
 
 
 
@@ -24,24 +19,6 @@ video_datasets = dict(hallway = dict(
                                     out_dir = base_dir + 'outputFiles/hallway/',
                                     video_file = datasets + 'hallway_cropped_long.mp4'
                                      ),
-                      oculus = dict(
-                                    out_dir = base_dir + 'outputFiles/Oculus/',
-                                    video_file = datasets + 'pedestrian_datasets_oculus/Oculus.mp4',
-                                    #frame_crop = [[220,720],[0,800]] 
-                                    frame_ranges = dict(
-                                                       large = (0, 5000),
-                                                       one_extra_lead = (0, 1500),
-                                                       horizontal_vertical = (650,1500),
-                                                       person_horizontal = (1100, 1500),                                                       
-                                                       person_vertical = (700, 900),
-                                                       two_horizontal = (2433, 2600),
-                                                       clear_horizontal = (2650, 2876),
-                                                       multiple = (3742, 4000),
-                                                       mixed_pair = (250, 370),
-                                                       non_maxima = (2650, 2701),
-                                                       late = (2650, 4000)
-                                                       )
-                                    ),
                       cafe = dict(
                                   out_dir = base_dir + 'outputFiles/cafe_cropped_long_center_tracks/',
                                   video_file = datasets + 'cafe_cropped_center_long.mp4'
@@ -52,10 +29,6 @@ picture_datasets = dict(mall = dict(
                                     path = datasets + '/mall/frames/',
                                     extension = '*.jpg'
                                     ),
-                        oculus_end = dict(
-                                        path = datasets + 'pedestrian_datasets_oculus/Oculus Edge/',
-                                        extension = '*.JPG'
-                                        )
                         )
    
 class ImageDataset:
